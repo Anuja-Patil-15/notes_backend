@@ -7,9 +7,11 @@ import authRoutes from './routes/auth.routes.js';
 import pdfRoutes from './routes/pdf.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
+
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 
 // FIX 1: Provide a fallback port number (5000), NOT a URL string!
 const PORT = process.env.PORT || 5000;
