@@ -10,16 +10,36 @@ import adminRoutes from './routes/admin.routes.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || https://notes-backend-70vb.onrender.com;
+
+// FIX 1: Provide a fallback port number (5000), NOT a URL string!
+const PORT = process.env.PORT || 5000;
 
 // Create uploads dir
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
-// Middleware
+// FIX 2: Bulletproof production & development CORS handler
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://nottai.vercel.app'
+];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : 'https://nottai.vercel.app',
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.indexOf(origin) !== -1;
+    const isVercelPreview = /\.vercel\.app$/.test(origin);
+
+    if (isAllowed || isVercelPreview) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('CORS access blocked for this origin.'), false);
+    }
+  },
   credentials: true,
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
@@ -37,5 +57,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
